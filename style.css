@@ -1,0 +1,341 @@
+/* c:\PlanMyPaisa\static\css\style.css (Conceptual) */
+
+/* --- Base Styles & Resets --- */
+:root {
+    --color-primary: #00A896; /* Deep Mint Green */
+    --color-background: #F0F7F4; /* Soft Mint Cream */
+    --color-text-dark: #4A4E69; /* Charcoal Blue-Grey */
+    --color-accent: #FFC300; /* Goldenrod Yellow */
+    --color-alert: #D90429; /* Subtle Coral Red */
+
+    /* Typography */
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-utility: 'IBM Plex Mono', monospace;
+
+    /* Type Scale (example based on 1.25 perfect fifth) */
+    --text-h1: 3.052em;
+    --text-h2: 2.441em;
+    --text-h3: 1.953em;
+    --text-body-large: 1.25em;
+    --text-body-base: 1em;
+    --text-small: 0.8em;
+    --text-caption: 0.75em;
+
+    /* Spacing (example based on 8px grid) */
+    --spacing-xs: 8px;
+    --spacing-sm: 16px;
+    --spacing-md: 24px;
+    --spacing-lg: 48px;
+    --spacing-xl: 96px;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    font-size: var(--text-body-base);
+    line-height: 1.6;
+    color: var(--color-text-dark);
+    background-color: var(--color-background);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--spacing-md);
+}
+
+/* --- Typography --- */
+h1, h2, h3 {
+    font-family: var(--font-display);
+    color: var(--color-text-dark);
+    font-weight: 700;
+    letter-spacing: -0.02em; /* Subtle tightening for display fonts */
+    margin-bottom: var(--spacing-sm);
+}
+
+h1 { font-size: var(--text-h1); line-height: 1.1; }
+h2 { font-size: var(--text-h2); line-height: 1.2; }
+h3 { font-size: var(--text-h3); line-height: 1.3; font-weight: 600; } /* Space Grotesk doesn't have semi-bold, use 600 if available or 700 */
+
+.body-large {
+    font-size: var(--text-body-large);
+    line-height: 1.5;
+}
+
+.section-heading {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.feature-title {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    margin-bottom: var(--spacing-sm);
+}
+
+/* --- Buttons --- */
+.btn {
+    display: inline-block;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: 8px;
+    text-decoration: none;
+    font-family: var(--font-body);
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 90%, black); /* Use color-mix for darkening */
+    transform: translateY(-2px);
+}
+
+.btn-large {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--text-body-large);
+}
+
+/* --- Header --- */
+.site-header {
+    background-color: var(--color-background);
+    padding: var(--spacing-md) 0;
+    border-bottom: 1px solid rgba(74, 78, 105, 0.1); /* Subtle separator */
+}
+
+.site-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.main-nav ul {
+    list-style: none;
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.main-nav a {
+    color: var(--color-text-dark);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.main-nav a:hover {
+    color: var(--color-primary);
+}
+
+/* --- Hero Section (Signature Element) --- */
+.hero-section {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    padding: var(--spacing-xl) 0;
+    overflow: hidden; /* Ensure calendar doesn't spill */
+    background-color: var(--color-background);
+    text-align: center;
+}
+
+.hero-calendar-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.1; /* Subtle background element */
+    z-index: 0;
+    pointer-events: none; /* Allow clicks to pass through to content */
+}
+
+.planmypaisa-calendar {
+    width: 80%; /* Adjust size as needed */
+    max-width: 800px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    padding: var(--spacing-md);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.calendar-header {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    color: var(--color-text-dark);
+    margin-bottom: var(--spacing-sm);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.day {
+    padding: 8px;
+    text-align: center;
+    font-family: var(--font-utility); /* Using utility font for dates */
+    font-size: var(--text-small);
+    color: var(--color-text-dark);
+    position: relative;
+    border-radius: 4px;
+}
+
+.day.has-event {
+    background-color: color-mix(in srgb, var(--color-accent) 10%, transparent); /* Subtle highlight for event days */
+    border: 1px solid color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+.ghost-event {
+    opacity: 0; /* Initially hidden */
+    animation: fadeInGhost 2s ease-out forwards;
+    animation-delay: var(--delay); /* Staggered animation */
+    pointer-events: auto; /* Make ghost events interactive */
+    cursor: help; /* Indicate hoverable */
+}
+
+.ghost-event:hover::after {
+    content: attr(data-event); /* Show event data on hover */
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--color-text-dark);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: var(--text-small);
+    z-index: 10;
+    pointer-events: none; /* Don't block interaction with calendar */
+}
+
+@keyframes fadeInGhost {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 0.3; transform: translateY(0); } /* Subtle fade in */
+}
+
+/* Staggered animation for ghost events (JS would apply --delay) */
+/* These are examples, JS will dynamically apply more precise delays */
+.day:nth-child(4).ghost-event { --delay: 0.5s; }
+.day:nth-child(6).ghost-event { --delay: 1.0s; }
+.day:nth-child(10).ghost-event { --delay: 1.5s; }
+.day:nth-child(17).ghost-event { --delay: 2.0s; }
+.day:nth-child(24).ghost-event { --delay: 2.5s; }
+
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+}
+
+/* --- Features Section --- */
+.features-section {
+    padding: var(--spacing-xl) 0;
+    background-color: white; /* Contrast with background */
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+}
+
+.feature-item:last-child {
+    margin-bottom: 0;
+}
+
+.feature-item.reverse {
+    flex-direction: row-reverse;
+}
+
+.feature-text {
+    flex: 1;
+}
+
+.feature-visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.feature-icon {
+    max-width: 80%;
+    height: auto;
+}
+
+/* --- CTA Section --- */
+.cta-section {
+    background-color: var(--color-primary);
+    color: white;
+    text-align: center;
+    padding: var(--spacing-xl) 0;
+}
+
+.cta-section .section-heading {
+    color: white;
+}
+
+.cta-section .body-large {
+    margin-bottom: var(--spacing-lg);
+}
+
+/* --- Footer --- */
+.site-footer {
+    background-color: var(--color-text-dark);
+    color: rgba(255, 255, 255, 0.7);
+    padding: var(--spacing-md) 0;
+    text-align: center;
+    font-size: var(--text-small);
+}
+
+/* --- Responsive Adjustments (Conceptual) --- */
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: 60vh;
+        padding: var(--spacing-lg) 0;
+    }
+
+    .hero-content h1 {
+        font-size: var(--text-h2);
+    }
+
+    .feature-item, .feature-item.reverse {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .feature-visual {
+        margin-bottom: var(--spacing-md);
+    }
+}
