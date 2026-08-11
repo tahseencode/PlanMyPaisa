@@ -270,6 +270,54 @@ h3 { font-size: var(--text-h3); line-height: 1.3; font-weight: 600; } /* Space G
     margin-bottom: var(--spacing-xl);
 }
 
+/* --- Interactive Demo Section --- */
+.demo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr; /* Give status a bit more space */
+    gap: var(--spacing-lg);
+    text-align: left;
+    background-color: var(--color-background);
+    padding: var(--spacing-lg);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.form-group {
+    margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+    font-size: var(--text-small);
+}
+
+.form-group input {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border-radius: 8px;
+    border: 1px solid rgba(74, 78, 105, 0.2);
+    font-family: var(--font-utility);
+    font-size: var(--text-body-base);
+    background-color: white;
+    color: var(--color-text-dark);
+}
+
+.status-container #task-status-content {
+    background-color: var(--color-text-dark);
+    color: #f0f7f4;
+    padding: var(--spacing-md);
+    border-radius: 8px;
+    font-family: var(--font-utility);
+    min-height: 200px; /* To avoid layout shifts */
+    height: 100%;
+    white-space: pre-wrap; /* To format JSON nicely */
+    word-wrap: break-word;
+    transition: background-color 0.3s ease;
+}
+
 .feature-item:last-child {
     margin-bottom: 0;
 }
@@ -324,6 +372,11 @@ h3 { font-size: var(--text-h3); line-height: 1.3; font-weight: 600; } /* Space G
     .hero-section {
         min-height: 60vh;
         padding: var(--spacing-lg) 0;
+    }
+
+    .demo-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-xl);
     }
 
     .hero-content h1 {

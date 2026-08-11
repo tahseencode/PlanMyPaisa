@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=Inter:wght@400;600;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <header class="site-header">
@@ -74,6 +74,35 @@
             </div>
         </section>
 
+        <section id="interactive-demo" class="cta-section" style="background-color: white; color: var(--color-text-dark);">
+            <div class="container">
+                <h2 class="section-heading">See It In Action</h2>
+                <p class="body-large" style="margin-bottom: var(--spacing-lg);">
+                    Submit a sample transaction to our asynchronous backend. The status will update in real-time as the Celery worker processes it.
+                </p>
+                <div class="demo-grid">
+                    <div class="form-container">
+                        <h3 class="feature-title" style="text-align: left;">Dispatch a Transaction</h3>
+                        <form id="transaction-form">
+                            <div class="form-group">
+                                <label for="customer-id">Customer ID</label>
+                                <input type="text" id="customer-id" name="customer_id" value="cust_12345" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="amount">Amount ($)</label>
+                                <input type="number" id="amount" name="amount" step="0.01" value="42.50" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Process Asynchronously</button>
+                        </form>
+                    </div>
+                    <div class="status-container">
+                        <h3 class="feature-title" style="text-align: left;">Task Status</h3>
+                        <div id="task-status-content"><p>Awaiting transaction submission...</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="features" class="features-section">
             <div class="container">
                 <h2 class="section-heading">How PlanMyPaisa Transforms Your Finances</h2>
@@ -84,13 +113,13 @@
                     </div>
                     <div class="feature-visual">
                         <!-- Stylized calendar icon or animation -->
-                        <img src="/static/images/events-mode.svg" alt="Events Mode" class="feature-icon">
+                        <img src="{{ url_for('static', filename='images/events-mode.svg') }}" alt="Events Mode" class="feature-icon">
                     </div>
                 </div>
                 <div class="feature-item reverse">
                     <div class="feature-visual">
                         <!-- Subtle graph animation -->
-                        <img src="/static/images/behavioral-mode.svg" alt="Behavioral Mode" class="feature-icon">
+                        <img src="{{ url_for('static', filename='images/behavioral-mode.svg') }}" alt="Behavioral Mode" class="feature-icon">
                     </div>
                     <div class="feature-text">
                         <h3 class="feature-title">Your Habits, Your Budget.</h3>
@@ -104,7 +133,7 @@
                     </div>
                     <div class="feature-visual">
                         <!-- Friendly Larry the Llama illustration -->
-                        <img src="/static/images/larry-llama.svg" alt="Larry the Llama" class="feature-icon">
+                        <img src="{{ url_for('static', filename='images/larry-llama.svg') }}" alt="Larry the Llama" class="feature-icon">
                     </div>
                 </div>
             </div>
@@ -125,6 +154,6 @@
         </div>
     </footer>
 
-    <script src="/static/js/main.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

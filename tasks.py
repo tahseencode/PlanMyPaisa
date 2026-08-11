@@ -69,7 +69,7 @@ class DatabaseService:
 # Instantiate the database service
 db_service = DatabaseService()
 
-@app.task
+@app.task(bind=True, max_retries=5, default_retry_delay=60)
 def process_transaction(self, transaction_data: Dict[str, Any]) -> None:
     """
     Asynchronously process a transaction fetched from the Nessie API.
@@ -112,13 +112,12 @@ def process_transaction(self, transaction_data: Dict[str, Any]) -> None:
         # --- Advanced Retry Logic with Exponential Backoff ---
         # Celery's `bind=True` allows access to `self` (the task instance).
         # `max_retries` and `default_retry_delay` are set in the decorator.
-        # We implement exponential backoff for retries to avoid overwhelming external services.
-        if self.request.retries < self.max_retries:
+        try:
             # Calculate exponential backoff: initial_delay * (2 ^ retries)
             countdown = self.default_retry_delay * (2 ** self.request.retries)
             logger.warning(f"Retrying task process_transaction for customer {customer_id} in {countdown} seconds. Attempt {self.request.retries + 1}/{self.max_retries + 1}")
             raise self.retry(exc=e, countdown=countdown)
-        else:
+        except self.MaxRetriesExceededError:
             logger.critical(f"Max retries ({self.max_retries}) reached for transaction processing for customer {customer_id}. Task failed permanently.")
             # After exhausting retries, log the permanent failure and potentially
             # move the transaction to a dead-letter queue or trigger an alert.

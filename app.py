@@ -1,11 +1,11 @@
 # app.py
 import os
 import logging
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from celery.exceptions import CeleryError
 
 # Import your Celery tasks
-from tasks import process_transaction
+from tasks import process_transaction, app as celery_app
 
 # --- Configuration ---
 FLASK_ENV = os.getenv('FLASK_ENV', 'development')
@@ -25,6 +25,11 @@ logger = logging.getLogger(__name__)
 # Set Flask's default logger to our configured logger
 app.logger.handlers = logger.handlers
 app.logger.setLevel(logger.level)
+
+@app.route('/')
+def index():
+    """Serves the main index.html page from the templates folder."""
+    return render_template('index.html')
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -60,7 +65,7 @@ def create_transaction():
         return jsonify({
             "message": "Transaction processing initiated",
             "task_id": task.id,
-            "status_url": f"/tasks/{task.id}" # Example for checking task status (would need another endpoint)
+            "status_url": f"/tasks/{task.id}"
         }), 202 # 202 Accepted: The request has been accepted for processing, but the processing has not been completed.
 
     except CeleryError as e:
@@ -69,6 +74,20 @@ def create_transaction():
     except Exception as e:
         app.logger.critical(f"An unexpected error occurred: {e}", exc_info=True)
         return jsonify({"error": "An internal server error occurred."}), 500
+
+@app.route('/tasks/<task_id>', methods=['GET'])
+def get_task_status(task_id):
+    """
+    Retrieves the status of a Celery task.
+    """
+    task = celery_app.AsyncResult(task_id)
+    response = {
+        'state': task.state,
+        'info': task.info, # Can contain progress or result
+    }
+    if task.state == 'FAILURE':
+        response['error'] = str(task.info) # The exception instance
+    return jsonify(response)
 
 @app.errorhandler(404)
 def not_found_error(error):
