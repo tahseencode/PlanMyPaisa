@@ -69,7 +69,7 @@ class DatabaseService:
 # Instantiate the database service
 db_service = DatabaseService()
 
-@app.task(bind=True, max_retries=5, default_retry_delay=60)
+@app.task(bind=True, max_retries=10, default_retry_delay=60)
 def process_transaction(self, transaction_data: Dict[str, Any]) -> None:
     """
     Asynchronously process a transaction fetched from the Nessie API.
