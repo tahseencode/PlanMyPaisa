@@ -52,7 +52,7 @@ def create_transaction():
     app.logger.info(f"Received transaction data: {transaction_data}")
 
     # Basic input validation (more comprehensive validation should be done with a library like Marshmallow or Pydantic)
-    required_fields = ['customer_id', 'amount']
+    required_fields = ['customer_id', 'amount', 'description']
     if not all(field in transaction_data for field in required_fields):
         missing_fields = [field for field in required_fields if field not in transaction_data]
         app.logger.error(f"Missing required fields in transaction data: {missing_fields}")

@@ -1,6 +1,7 @@
 # tasks.py
 import os
 import logging
+import time
 from celery import Celery
 from nessie_client import NessieClient
 from typing import Dict, Any
@@ -66,59 +67,98 @@ class DatabaseService:
         # In a real system, this might write to a dead-letter table or trigger an alert.
         pass
 
+# --- "Smart" Feature: Transaction Categorization ---
+# This is a simplified, rule-based categorizer. In a real-world scenario,
+# this could be a machine learning model or a more complex rules engine.
+def categorize_transaction(description: str) -> str:
+    """Categorizes a transaction based on its description."""
+    description = description.lower()
+    if any(keyword in description for keyword in ['coffee', 'starbucks', 'cafe']):
+        return 'Food & Drink'
+    if any(keyword in description for keyword in ['uber', 'lyft', 'taxi']):
+        return 'Transport'
+    if any(keyword in description for keyword in ['amazon', 'shopping', 'store']):
+        return 'Shopping'
+    if any(keyword in description for keyword in ['rent', 'mortgage']):
+        return 'Housing'
+    if any(keyword in description for keyword in ['netflix', 'spotify', 'hulu']):
+        return 'Entertainment'
+    return 'Miscellaneous'
+
 # Instantiate the database service
 db_service = DatabaseService()
 
 @app.task(bind=True, max_retries=10, default_retry_delay=60)
-def process_transaction(self, transaction_data: Dict[str, Any]) -> None:
+def process_transaction(self, transaction_data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Asynchronously process a transaction fetched from the Nessie API.
+    Asynchronously process a transaction, categorize it, and report progress.
 
     Args:
         transaction_data: A dictionary containing transaction details.
-                          Expected keys: 'customer_id', 'amount'.
-                          Additional keys like 'description', 'type', etc., are also expected.
+                          Expected keys: 'customer_id', 'amount', 'description'.
+    
+    Returns:
+        A dictionary with the result of the processing.
     """
     try:
+        # --- Progress Reporting: Initial State ---
+        self.update_state(state='PROGRESS', meta={'status': 'Initiated...'})
+        time.sleep(1) # Simulate initial work
+
         # --- Data Validation ---
-        # Ensure critical data points are present and of the correct type.
-        required_keys = ['customer_id', 'amount']
+        self.update_state(state='PROGRESS', meta={'status': 'Validating transaction data...'})
+        time.sleep(1)
+        required_keys = ['customer_id', 'amount', 'description'] # Added 'description'
         if not all(key in transaction_data for key in required_keys):
             missing_keys = [key for key in required_keys if key not in transaction_data]
             logger.error(f"Transaction data missing required keys: {missing_keys}. Data: {transaction_data}")
-            # Do not retry for invalid input data, as it indicates a programming error or bad input.
-            return
+            # Do not retry for invalid input data. Mark as failed.
+            self.update_state(state='FAILURE', meta={'status': f"Invalid input: Missing {', '.join(missing_keys)}"})
+            return {'status': 'Failed', 'reason': f"Missing required keys: {', '.join(missing_keys)}"}
 
-        customer_id = str(transaction_data['customer_id']) # Ensure customer_id is treated as a string
-        amount = float(transaction_data['amount'])       # Ensure amount is a float for calculations
+        customer_id = str(transaction_data['customer_id'])
+        amount = float(transaction_data['amount'])
+        description = str(transaction_data['description'])
 
         logger.info(f"Processing transaction for customer_id: {customer_id}, amount: {amount}. Attempt {self.request.retries + 1}/{self.max_retries + 1}")
+
+        # --- "Smart" Feature: Categorization ---
+        self.update_state(state='PROGRESS', meta={'status': f"Categorizing: '{description}'..."})
+        time.sleep(1.5) # Simulate ML model thinking :)
+        category = categorize_transaction(description)
+        transaction_data['category'] = category
+        logger.info(f"Transaction for customer {customer_id} categorized as '{category}'.")
+        self.update_state(state='PROGRESS', meta={'status': f"Categorized as '{category}'. Updating records..."})
+        time.sleep(1)
 
         # --- Core Logic: Update budget, record transaction, trigger notifications ---
         db_service.update_user_budget(customer_id, amount, transaction_data)
         db_service.record_transaction(customer_id, transaction_data)
-        db_service.trigger_notification(customer_id, f"Your transaction of ${amount:.2f} has been processed.")
+        db_service.trigger_notification(customer_id, f"Your transaction of ${amount:.2f} ('{description}') has been processed.")
 
         logger.info(f"Successfully processed transaction for customer {customer_id} with amount {amount}.")
 
+        # --- Progress Reporting: Final State ---
+        # The 'info' dict in the final result is what the client sees.
+        return {'status': 'Complete', 'customer_id': customer_id, 'amount': amount, 'category': category}
+
     except (ValueError, TypeError) as ve:
-        # Catch specific data type/value errors for better error reporting.
-        logger.error(f"Data validation error in transaction_data for customer {transaction_data.get('customer_id', 'N/A')}: {ve}. Data: {transaction_data}")
-        # No retry for bad input data, as it won't resolve itself.
+        logger.error(f"Data validation error for customer {transaction_data.get('customer_id', 'N/A')}: {ve}. Data: {transaction_data}")
+        self.update_state(state='FAILURE', meta={'status': f"Data validation error: {ve}"})
+        return {'status': 'Failed', 'reason': str(ve)} # Return failure info
     except Exception as e:
-        # Catch any other unexpected errors during processing.
         logger.error(f"Unexpected error processing transaction for customer {transaction_data.get('customer_id', 'N/A')}: {e}", exc_info=True)
 
         # --- Advanced Retry Logic with Exponential Backoff ---
-        # Celery's `bind=True` allows access to `self` (the task instance).
-        # `max_retries` and `default_retry_delay` are set in the decorator.
         try:
-            # Calculate exponential backoff: initial_delay * (2 ^ retries)
             countdown = self.default_retry_delay * (2 ** self.request.retries)
-            logger.warning(f"Retrying task process_transaction for customer {customer_id} in {countdown} seconds. Attempt {self.request.retries + 1}/{self.max_retries + 1}")
+            logger.warning(f"Retrying task for customer {customer_id} in {countdown} seconds. Attempt {self.request.retries + 1}/{self.max_retries + 1}")
+            # Update state to show it's retrying
+            self.update_state(state='RETRY', meta={'status': f"Service unavailable. Retrying in {countdown}s..."})
             raise self.retry(exc=e, countdown=countdown)
         except self.MaxRetriesExceededError:
-            logger.critical(f"Max retries ({self.max_retries}) reached for transaction processing for customer {customer_id}. Task failed permanently.")
-            # After exhausting retries, log the permanent failure and potentially
-            # move the transaction to a dead-letter queue or trigger an alert.
+            logger.critical(f"Max retries reached for customer {customer_id}. Task failed permanently.")
             db_service.log_failed_transaction(customer_id, transaction_data, str(e))
+            # Update state to permanent failure
+            self.update_state(state='FAILURE', meta={'status': 'Permanent failure after multiple retries.'})
+            return {'status': 'Failed Permanently', 'reason': str(e)}
