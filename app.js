@@ -1,93 +1,121 @@
-// c:\PlanMyPaisa\static\js\app.js
+import React, { useEffect } from 'react';
+import InteractiveDemo from './components/InteractiveDemo';
 
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('transaction-form');
-    const statusEl = document.getElementById('task-status-content');
-    const submitBtn = document.getElementById('submit-btn');
+// --- Placeholder Components ---
+// In a real application, these would be in their own files inside './components/'
 
-    let pollingInterval;
+const Header = () => (
+    <header className="site-header">
+        <div className="container">
+            <a href="/" className="logo">PlanMyPaisa</a>
+            <nav className="main-nav">
+                <ul>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#demo">Demo</a></li>
+                    <li><a href="#signup">Sign Up</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+);
 
-    // Function to poll for task status
-    const pollTaskStatus = async (statusUrl) => {
-        try {
-            const response = await fetch(statusUrl);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
+const Hero = () => {
+    // This effect replicates the stagger animation from main.js
+    useEffect(() => {
+        const ghostEvents = document.querySelectorAll('.ghost-event');
+        ghostEvents.forEach((event, index) => {
+            event.style.setProperty('--delay', `${0.5 + index * 0.3}s`);
+        });
+    }, []); // Run only once on mount
 
-            // Update the status display
-            statusEl.textContent = JSON.stringify(data, null, 2);
+    // Dummy data for calendar days
+    const days = Array.from({ length: 35 }, (_, i) => i - 1);
+    const eventDays = [4, 6, 10, 17, 24];
 
-            // Stop polling if the task is finished (SUCCESS, FAILURE)
-            if (data.state === 'SUCCESS' || data.state === 'FAILURE') {
-                clearInterval(pollingInterval);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Process Transaction';
+    return (
+        <section className="hero-section">
+            <div className="hero-calendar-container">
+                <div className="planmypaisa-calendar">
+                    <div className="calendar-header">October 2026</div>
+                    <div className="calendar-grid">
+                        {days.map((day, index) => (
+                            <div
+                                key={index}
+                                className={`day ${eventDays.includes(index) ? 'has-event ghost-event' : ''}`}
+                                data-event={eventDays.includes(index) ? 'Auto-Pay: Bill' : ''}
+                            >
+                                {day > 0 && day < 32 ? day : ''}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            <div className="hero-content">
+                <h1>Intelligent Financial Planning, Simplified.</h1>
+                <p className="body-large">PlanMyPaisa uses asynchronous tasks to categorize your spending without blocking your experience. See it in action below.</p>
+            </div>
+        </section>
+    );
+};
 
-                // Add a visual cue for success/failure
-                if (data.state === 'SUCCESS') {
-                    statusEl.style.backgroundColor = '#00A896'; // var(--color-primary)
-                } else {
-                    statusEl.style.backgroundColor = '#D90429'; // var(--color-alert)
-                }
-            }
+const Features = () => (
+    <section id="features" className="features-section">
+        <div className="container">
+            <div className="section-heading">
+                <h2>Why PlanMyPaisa?</h2>
+                <p className="body-large">Our backend is built for reliability and scale.</p>
+            </div>
+            <div className="feature-item">
+                <div className="feature-text">
+                    <h3 className="feature-title">Asynchronous Processing</h3>
+                    <p>Never wait for a page to load. We process your transactions in the background, ensuring a snappy user experience every time.</p>
+                </div>
+                <div className="feature-visual" />
+            </div>
+            <div className="feature-item reverse">
+                <div className="feature-text">
+                    <h3 className="feature-title">Smart Categorization</h3>
+                    <p>Our "smart" engine analyzes transaction descriptions to automatically categorize your spending, giving you clear insights into your financial habits.</p>
+                </div>
+                <div className="feature-visual" />
+            </div>
+        </div>
+    </section>
+);
 
-        } catch (error) {
-            console.error('Polling error:', error);
-            statusEl.textContent = JSON.stringify({ error: 'Failed to get task status.' }, null, 2);
-            clearInterval(pollingInterval);
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Process Transaction';
-        }
-    };
+const CTA = () => (
+    <section id="signup" className="cta-section">
+        <div className="container">
+            <h2 className="section-heading">Ready to Take Control?</h2>
+            <p className="body-large">Start your journey towards financial clarity today.</p>
+            <a href="#signup" className="btn btn-large">Get Started for Free</a>
+        </div>
+    </section>
+);
 
-    // Handle form submission
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        // Clear previous polling and reset UI
-        if (pollingInterval) {
-            clearInterval(pollingInterval);
-        }
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Processing...';
-        statusEl.style.backgroundColor = 'var(--color-text-dark)'; // Reset color
-        statusEl.textContent = JSON.stringify({ status: 'Initiating request...' }, null, 2);
+const Footer = () => (
+    <footer className="site-footer">
+        <div className="container">
+            <p>&copy; 2026 PlanMyPaisa. All rights reserved.</p>
+        </div>
+    </footer>
+);
 
-        const formData = new FormData(form);
-        const data = {
-            customer_id: formData.get('customer_id'),
-            amount: parseFloat(formData.get('amount')),
-            description: formData.get('description'),
-        };
+function App() {
+  return (
+    <>
+      <Header />
+      <main>
+        <Hero />
+        <Features />
+        <section id="demo" className="container" style={{ paddingTop: 'var(--spacing-xl)', paddingBottom: 'var(--spacing-xl)' }}>
+            <InteractiveDemo />
+        </section>
+        <CTA />
+      </main>
+      <Footer />
+    </>
+  );
+}
 
-        try {
-            const response = await fetch('/transactions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            });
-
-            const result = await response.json();
-            statusEl.textContent = JSON.stringify(result, null, 2);
-
-            if (response.status === 202 && result.status_url) {
-                // Start polling the status URL
-                pollingInterval = setInterval(() => pollTaskStatus(result.status_url), 1000);
-            } else {
-                // Handle immediate errors from the Flask endpoint
-                throw new Error(result.error || 'Failed to initiate task.');
-            }
-
-        } catch (error) {
-            console.error('Submission error:', error);
-            statusEl.textContent = JSON.stringify({ error: error.message }, null, 2);
-            statusEl.style.backgroundColor = '#D90429'; // var(--color-alert)
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Process Transaction';
-        }
-    });
-});
+export default App;
