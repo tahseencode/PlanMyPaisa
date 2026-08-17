@@ -18,7 +18,7 @@ This project was created to showcase a robust backend architecture where long-ru
 -   **Backend:** Python, Flask
 -   **Asynchronous Tasks:** Celery
 -   **Message Broker:** Redis (or RabbitMQ, configurable in Celery)
--   **Frontend:** HTML5, CSS3, vanilla JavaScript
+-   **Frontend:** React, HTML5, CSS3
 -   **Deployment:** Gunicorn (recommended for production)
 
 ## Project Structure
@@ -27,13 +27,13 @@ This project was created to showcase a robust backend architecture where long-ru
 .
 ├── app.py              # Main Flask application, API endpoints
 ├── tasks.py            # Celery application and task definitions
+├── app.js              # Root React component
 ├── templates
 │   └── index.html      # Frontend HTML
 ├── static
 │   ├── css
 │   │   └── style.css   # Stylesheet
-│   └── js
-│       └── app.js      # Frontend JavaScript for form submission and status polling
+├── package.json        # Frontend dependencies (assumed for React)
 ├── requirements.txt    # Python dependencies
 └── README.md
 ```
@@ -45,6 +45,7 @@ This project was created to showcase a robust backend architecture where long-ru
 -   Python 3.8+
 -   `pip` (Python package installer)
 -   Redis Server (or another Celery-compatible message broker)
+-   Node.js and npm (for the React frontend)
 
 ### Installation Steps
 
@@ -62,16 +63,28 @@ This project was created to showcase a robust backend architecture where long-ru
 
     # For Windows
     python -m venv venv
-    .\venv\Scripts\activate
+    .\venv\Scripts\activate 
+
+    # Note for Windows users: If you get an error about script execution being disabled,
+    # run the following command in your PowerShell terminal (you may need to run as Administrator),
+    # then try activating again:
+    # Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+    # Alternatively, you can use Command Prompt (cmd.exe) and run: venv\Scripts\activate.bat
     ```
 
 3.  **Install the required Python packages:**
-    *(Note: You should create a `requirements.txt` file containing `Flask`, `Celery`, and `redis`)*
+    (Make sure your virtual environment is activated)
     ```bash
-    pip install Flask Celery redis
+    pip install -r requirements.txt
     ```
 
-4.  **Install and run Redis:**
+4.  **Install frontend dependencies:**
+    (This assumes you have a `package.json` file for the React app)
+    ```bash
+    npm install
+    ```
+
+5.  **Install and run Redis:**
     Follow the official installation instructions for your OS: https://redis.io/docs/getting-started/
 
     Once installed, run the Redis server in a separate terminal:
@@ -81,28 +94,39 @@ This project was created to showcase a robust backend architecture where long-ru
 
 ## Running the Application
 
-You need to run three separate processes in three different terminal windows. Make sure your virtual environment is activated in the terminals used for the Celery worker and Flask app.
+This project has a separate backend (Flask/Celery) and frontend (React). You will need to run them concurrently in separate terminals.
 
-1.  **Terminal 1: Start the Redis Server** (if not already running)
+### Backend
+
+1.  **Terminal 1: Start Redis**
+    If it's not already running from the installation step, start the Redis server.
     ```bash
     redis-server
     ```
 
 2.  **Terminal 2: Start the Celery Worker**
-    This worker will listen for and execute tasks from the queue.
+    This worker will listen for and execute background tasks. Make sure your Python virtual environment is activated.
     ```bash
     # From the project's root directory
     celery -A tasks.app worker --loglevel=info
     ```
 
-3.  **Terminal 3: Start the Flask Web Application**
+3.  **Terminal 3: Start the Flask API Server**
+    This runs the backend API that the frontend will communicate with. Make sure your Python virtual environment is activated.
     ```bash
     # From the project's root directory
     python app.py
     ```
+    The API will be running at `http://127.0.0.1:5000`.
 
-4.  **Access the application:**
-    Open your web browser and navigate to `http://127.0.0.1:5000`. You can now submit transactions and see the status updates.
+### Frontend
+
+4.  **Terminal 4: Start the React Development Server**
+    This will serve the user interface.
+    ```bash
+    npm start
+    ```
+    This command will typically open a new browser tab. If not, navigate to `http://localhost:3000` (or whatever port is indicated in the terminal). The React application is configured to send API requests to your Flask backend.
 
 ## API Endpoints
 

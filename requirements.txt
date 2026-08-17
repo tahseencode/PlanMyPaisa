@@ -1,4 +1,3 @@
 Flask
 celery[redis]
-nessie-client
 gunicorn

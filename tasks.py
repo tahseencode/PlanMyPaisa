@@ -3,14 +3,12 @@ import os
 import logging
 import time
 from celery import Celery
-from nessie_client import NessieClient
 from typing import Dict, Any
 
 # --- Configuration ---
 # Load configuration from environment variables for flexibility and security.
 # Provide sensible defaults for development, but ensure they are set in production.
 REDIS_BROKER_URL = os.getenv('REDIS_BROKER_URL', 'redis://localhost:6379/0')
-NESSIE_API_KEY = os.getenv('NESSIE_API_KEY', 'YOUR_NESSIE_API_KEY_DEFAULT') # IMPORTANT: Set this in your production environment!
 
 # --- Logging Setup ---
 # Configure a robust logging system instead of simple print statements.
@@ -20,18 +18,6 @@ logger = logging.getLogger(__name__)
 
 # --- Celery App Initialization ---
 app = Celery('tasks', broker=REDIS_BROKER_URL)
-
-# --- Nessie Client Initialization ---
-# Initialize the Nessie client. In a highly concurrent environment,
-# consider if the client needs to be re-initialized per task or managed
-# via a connection pool if it's not thread-safe. For now, it's global.
-try:
-    nessie = NessieClient(api_key=NESSIE_API_KEY)
-    logger.info("NessieClient initialized successfully.")
-except Exception as e:
-    logger.error(f"Failed to initialize NessieClient: {e}. Please check NESSIE_API_KEY.", exc_info=True)
-    # Depending on the application's criticality, you might want to exit here
-    # if Nessie is absolutely essential for the application to function.
 
 # --- Database Service Placeholder ---
 # This class acts as a placeholder for your actual database interactions.
