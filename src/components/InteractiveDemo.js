@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const InteractiveDemo = () => {
     // Form state
@@ -82,47 +83,57 @@ const InteractiveDemo = () => {
         }
     };
 
-    const getStatusBgColor = () => {
-        if (!taskStatus?.state) return 'var(--color-text-dark)';
-        switch (taskStatus.state) {
-            case 'SUCCESS': return 'var(--color-primary)';
-            case 'FAILURE': return 'var(--color-alert)';
-            case 'RETRY': return 'var(--color-accent)';
-            default: return 'var(--color-text-dark)';
-        }
-    };
-
     return (
-        <div className="demo-grid">
-            <div className="form-container">
-                <h3 className="feature-title">Interactive Demo</h3>
-                <p>Submit a sample transaction to see the asynchronous background processing in action. The status on the right will update in real-time.</p>
-                <form id="transaction-form" onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="customer_id">Customer ID</label>
-                        <input type="text" id="customer_id" name="customer_id" value={customerId} onChange={e => setCustomerId(e.target.value)} required />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="amount">Amount ($)</label>
-                        <input type="number" id="amount" name="amount" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} required />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="description">Description</label>
-                        <input type="text" id="description" name="description" value={description} onChange={e => setDescription(e.target.value)} required />
-                    </div>
-                    <button type="submit" id="submit-btn" className="btn btn-primary" disabled={isSubmitting}>
-                        {isSubmitting ? 'Processing...' : 'Process Transaction'}
-                    </button>
-                </form>
-            </div>
-            <div className="status-container">
-                <h3 className="feature-title">Task Status</h3>
-                <p>The raw JSON response from the status endpoint will appear here.</p>
-                <div id="task-status-content" style={{ backgroundColor: getStatusBgColor() }}>
-                    <pre>{JSON.stringify(taskStatus, null, 2)}</pre>
+        <motion.section
+            className="interactive-section"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.8 }}
+        >
+            <div className="demo-container">
+                <div className="form-column">
+                    <h2>Live Demo</h2>
+                    <p>Submit a transaction to see the asynchronous backend in action. The status will update in real-time without blocking the UI.</p>
+                    <form id="transaction-form" onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label htmlFor="customer_id">Customer ID</label>
+                            <input type="text" id="customer_id" name="customer_id" value={customerId} onChange={e => setCustomerId(e.target.value)} required />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="amount">Amount ($)</label>
+                            <input type="number" id="amount" name="amount" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} required />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="description">Description</label>
+                            <input type="text" id="description" name="description" value={description} onChange={e => setDescription(e.target.value)} required />
+                        </div>
+                        <button type="submit" id="submit-btn" className="btn btn-primary" disabled={isSubmitting}>
+                            {isSubmitting ? 'Processing...' : 'Process Transaction'}
+                        </button>
+                    </form>
+                </div>
+                <div className="status-column">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={taskStatus.state || 'initial'}
+                            className="status-card"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <div className={`status-header status-${(taskStatus.state || 'default').toLowerCase()}`}>
+                                {taskStatus.state || 'STATUS'}
+                            </div>
+                            <div className="status-body">
+                                <pre>{JSON.stringify(taskStatus, null, 2)}</pre>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
                 </div>
             </div>
-        </div>
+        </motion.section>
     );
 };
 

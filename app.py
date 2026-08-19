@@ -13,6 +13,7 @@ FLASK_DEBUG = os.getenv('FLASK_DEBUG', 'True').lower() in ('true', '1', 't')
 FLASK_RUN_PORT = int(os.getenv('FLASK_RUN_PORT', 5000))
 
 # --- Flask App Initialization ---
+# In development, the React dev server handles the frontend. Flask is just an API.
 app = Flask(__name__)
 app.config['ENV'] = FLASK_ENV
 app.config['DEBUG'] = FLASK_DEBUG
@@ -25,11 +26,6 @@ logger = logging.getLogger(__name__)
 # Set Flask's default logger to our configured logger
 app.logger.handlers = logger.handlers
 app.logger.setLevel(logger.level)
-
-@app.route('/')
-def index():
-    """Serves the main index.html page from the templates folder."""
-    return render_template('index.html')
 
 @app.route('/health', methods=['GET'])
 def health_check():

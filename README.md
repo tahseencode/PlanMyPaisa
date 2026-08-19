@@ -18,7 +18,7 @@ This project was created to showcase a robust backend architecture where long-ru
 -   **Backend:** Python, Flask
 -   **Asynchronous Tasks:** Celery
 -   **Message Broker:** Redis (or RabbitMQ, configurable in Celery)
--   **Frontend:** React, HTML5, CSS3
+   **Frontend:** React, React Three Fiber (for 3D), Framer Motion (for animation)
 -   **Deployment:** Gunicorn (recommended for production)
 
 ## Project Structure
@@ -79,18 +79,21 @@ This project was created to showcase a robust backend architecture where long-ru
     ```
 
 4.  **Install frontend dependencies:**
-    (This assumes you have a `package.json` file for the React app)
     ```bash
     npm install
     ```
 
 5.  **Install and run Redis:**
-    Follow the official installation instructions for your OS: https://redis.io/docs/getting-started/
+    While Redis doesn't officially support Windows, a community-maintained version is available and works well for development.
 
-    Once installed, run the Redis server in a separate terminal:
-    ```bash
-    redis-server
-    ```
+    **On Windows (Native):**
+    1.  Go to the latest releases of the unofficial Windows port on GitHub: https://github.com/tporadowski/redis/releases.
+    2.  Download the latest `.msi` installer (e.g., `Redis-x.x.x-x64-xxx.msi`).
+    3.  Run the installer. **Important:** During setup, make sure to check the box that says **"Add the Redis installation folder to the PATH environment variable."**
+    4.  Once installed, you can open a new Command Prompt or PowerShell window and start the Redis server with the command below.
+
+    **On macOS/Linux:**
+    Follow the official installation instructions for your OS: https://redis.io/docs/getting-started/
 
 ## Running the Application
 
@@ -99,7 +102,7 @@ This project has a separate backend (Flask/Celery) and frontend (React). You wil
 ### Backend
 
 1.  **Terminal 1: Start Redis**
-    If it's not already running from the installation step, start the Redis server.
+    If it's not already running from the installation step, open a new terminal and start the Redis server. It will run in this window.
     ```bash
     redis-server
     ```
@@ -125,6 +128,10 @@ This project has a separate backend (Flask/Celery) and frontend (React). You wil
     This will serve the user interface.
     ```bash
     npm start
+    ```
+    *Note for Windows users:* If you get a `PSSecurityException` error, your PowerShell terminal is blocking the script. Run the following command first, then try `npm start` again:
+    ```powershell
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
     ```
     This command will typically open a new browser tab. If not, navigate to `http://localhost:3000` (or whatever port is indicated in the terminal). The React application is configured to send API requests to your Flask backend.
 
